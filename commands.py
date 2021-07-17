@@ -36,7 +36,7 @@ class LookCommand(Command):
         if self.target is None:
             player.world.look_at(player, player.container)
         else:
-            for obj in player.container.items():
+            for obj in player.container.items() + player.items():
                 if obj.name.lower() == self.target:
                     player.world.look_at(player, obj)
                     return
@@ -100,7 +100,9 @@ class TakeCommand(Command):
         return False
     
     def exec(self, player):
-        for obj in player.container.items():
+        for obj in player.container.collectable_items() + player.collectable_items():
+            if obj == player:
+                continue
             if obj.name.lower() == self.target:
                 if obj.be("collectable"):
                     obj["container_id"] = player.id
@@ -141,6 +143,40 @@ class SayCommand(Command):
 
     def exec(self, player):
         print(player.name+ ":", self.phrase)
+
+class OpenCommand(Command):
+    r = re.compile(r'^(apri|sblocca) (.+)$')
+
+    def matches(self, s):
+        m = self.r.match(s)
+        if m:
+            self.target = m[2]
+            return True
+        return False
+    
+    def exec(self, player):
+        for obj in player.container.collectable_items() + player.collectable_items():
+            if obj.name.lower() == self.target:
+                if obj.be("openable"):
+                    if obj.closed:
+                        if obj.locked:
+                            for o in player.items():
+                                if obj == o.opens :
+                                    obj["locked"] = False
+                                    obj["closed"] = False
+                                    print("hai aperto", obj.name, "con", o.name)
+                                    break
+                            else:
+                                print("non hai la chiave per aprire", obj.name)
+                        else:
+                            obj["closed"] = False
+                            print("hai aperto", obj.name)
+                    else:
+                        print("sciocco hobbit", obj.name, "è già aperto")
+                else:
+                    print("non puoi aprire", obj.name)
+                return
+        print("Non vedo nessun", self.target)
         
 Commands = [
     QuitCommand,
@@ -149,5 +185,6 @@ Commands = [
     TakeCommand,
     DropCommand,
     SayCommand,
+    OpenCommand,
 ]
 

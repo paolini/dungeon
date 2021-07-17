@@ -26,10 +26,27 @@ sword = world.add({
 
 chest = world.add({
     'attributes': ["container", "openable"],
+    'closed': True,
     'locked': True,
     'name': "baule",
     'description':"è un vecchio baule di legno con rifiniture metalliche",
     'container_id':cellar.id})
+
+sugar_jar = world.add({
+    'attributes': ["collectable", "openable"],
+    'closed': True,
+    'name': "barattolo",
+    'description': "è pieno di zucchero",
+    'container_id':kitchen.id,
+    })
+
+chest_key = world.add({
+    'attributes': ["collectable"],
+    'opens_id': chest.id,
+    'name': "chiave",
+    'description': "una vecchia chiave arrugginita... sa di zucchero",
+    'container_id':sugar_jar.id,
+})
 
 rodolfo = world.add({
     'attributes': ["player", "living", "container"],

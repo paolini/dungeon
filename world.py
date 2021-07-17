@@ -20,6 +20,15 @@ class Item(dict):
     def items(self):
         return [obj for obj in self.world.items.values() if obj.container == self]
 
+    def collectable_items(self):
+        l = []
+        for o in self.items():
+            if o.be("collectable"):
+                l.append(o)
+            if not o.closed:
+                l = l + o.collectable_items()
+        return l
+
     def set_passage(self, room, dir, rev_dir=None):
         if rev_dir is None:
             rev_dir = {'n':'s', 's':'n', 'e':'w', 'w':'e', 'u':'d', 'd':'u'}[dir]
@@ -30,7 +39,7 @@ class Item(dict):
             room.set_passage(self, rev_dir, False)
 
     def be(self, attribute): 
-        return self.attributes and (attribute in self.attributes)
+        return self.attributes and (attribute in self.attributes)            
 
 
 class World:
@@ -47,6 +56,12 @@ class World:
 
     def look_at(self, player, item):
         print(item.description or item.name)
+        if item.closed:
+            if item.locked:
+                print("è chiuso a chiave")
+            else:
+                print("è chiuso")
+            return
         objs = [x for x in item.items() if x != player]
         if len(objs) == 0:
             if "container" in item.attributes:
