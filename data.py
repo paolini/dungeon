@@ -20,7 +20,7 @@ cellar.set_passage(kitchen, 'n')
 sword = world.add({
     'attributes': ["weapon", "collectable"],
     'name': "spada",
-    'description': "è una spada bella",
+    'description': "è la spada si lord Drhoghenart il distruttore di ghiacciai, è una spada bella",
     'container_id': cellar.id
 })
 

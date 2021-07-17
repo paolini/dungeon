@@ -91,6 +91,7 @@ class GoCommand(Command):
 
 class TakeCommand(Command):
     r = re.compile(r'^(prendi|raccogli|afferra) (.*)$')
+
     def matches(self, s):
         m = self.r.match(s)
         self.target = None
@@ -103,17 +104,38 @@ class TakeCommand(Command):
         for obj in player.container.items():
             if obj.name.lower() == self.target:
                 if obj.be("collectable"):
-                    obj.container_id = player.id
+                    obj["container_id"] = player.id
                     print("fatto!")
                 else:
                     print("non puoi sollevare", self.target)                     
                 return
         print("Non vedo nessun", self.target)
 
+class DropCommand(Command):
+    r = re.compile(r'^(lascia|molla) (.*)$')
+
+    def matches(self, s):
+        m = self.r.match(s)
+        self.target = None
+        if m:
+            self.target = m[2]
+            return True
+        return False
+    
+    def exec(self, player):
+        for obj in player.items():
+            if obj.name.lower() == self.target:
+                assert obj.be("collectable")
+                obj["container_id"] = player.container.id
+                print("hai lasciato", obj.name)                     
+                return
+        print("Non hai", self.target)
+
 Commands = [
     QuitCommand,
     LookCommand,
     GoCommand,
     TakeCommand,
+    DropCommand,
 ]
 

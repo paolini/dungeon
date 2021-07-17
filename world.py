@@ -30,7 +30,7 @@ class Item(dict):
             room.set_passage(self, rev_dir, False)
 
     def be(self, attribute): 
-        return self.attributes and property in self.attributes
+        return self.attributes and (attribute in self.attributes)
 
 
 class World:
