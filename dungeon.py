@@ -4,12 +4,18 @@ from commands import Command, Commands
 
 def play(player, world):
     print("Ciao, {}".format(player.name))
+    if player.visited_ids is None:
+        player['visited_ids'] = []
     while True:
         # print("player", player)
         room = player.container
         if room:
             if player.last_container != room:
-                print(room.description or room.name)
+                if room.id in player.visited_ids:
+                    print(room.name)
+                else:
+                    print(room.description)
+                    player['visited_ids'].append(room.id)
         player.last_container = room
             
         s = input("comando> ")
