@@ -30,6 +30,7 @@ chest = world.add({
     'locked': True,
     'name': "baule",
     'description':"è un vecchio baule di legno con rifiniture metalliche",
+    'open_msg': "un ratto ti soffia contro arrabbiato da dentro il baule",
     'container_id':cellar.id})
 
 sugar_jar = world.add({
@@ -46,6 +47,25 @@ chest_key = world.add({
     'name': "chiave",
     'description': "una vecchia chiave arrugginita... sa di zucchero",
     'container_id':sugar_jar.id,
+})
+
+backpack = world.add({
+    'attributes': ["collectable", "container"],
+    'name': "zaino",
+    'description': "lo zaino da scampagnate di Rodolfo",
+    'container_id':chest.id,
+})
+shield = world.add({
+    'attributes': ["collectable", "shield"],
+    'name': "scudo",
+    'description': "uno scudo di legno piccolo e rovinato, c'è attaccato un bigliettino con scritto:42 ",
+    'container_id':chest.id,
+})
+rat = world.add({
+'attributes': ["living","collectable"],
+'name': "ratto",
+'description': "è molto arrabbiato con Rodolfo per averlo disturbato",
+'container_id':chest.id,
 })
 
 rodolfo = world.add({
