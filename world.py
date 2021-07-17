@@ -29,6 +29,10 @@ class Item(dict):
         if rev_dir is not False:
             room.set_passage(self, rev_dir, False)
 
+    def be(self, attribute): 
+        return self.attributes and property in self.attributes
+
+
 class World:
     def __init__(self):
         self.MAX_ID = 0
@@ -41,15 +45,24 @@ class World:
         self.items[self.MAX_ID] = item
         return item
 
-    def look_at(self, item):
+    def look_at(self, player, item):
         print(item.description or item.name)
-        objs = item.items()
+        objs = [x for x in item.items() if x != player]
         if len(objs) == 0:
-            if ("container" in item.attributes):
-                print("...è vuoto")
+            if "container" in item.attributes:
+                if "living" in item.attributes:
+                    print("è a mani vuote")
+                else:
+                    print("...è vuoto")
         elif len(objs) == 1:
-            print("c'è", objs[0].name)
+            if "living" in item.attributes:
+                print("ha", objs[0].name)
+            else:
+                print("c'è", objs[0].name)
         else:
-            print("ci sono:")
+            if "living" in item.attributes:
+                print("ha", objs[0].name)
+            else:
+                print("ci sono:")
             for obj in objs:
                 print("-", obj.name)

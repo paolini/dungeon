@@ -34,11 +34,11 @@ class LookCommand(Command):
     
     def exec(self, player):
         if self.target is None:
-            player.world.look_at(player.container)
+            player.world.look_at(player, player.container)
         else:
             for obj in player.container.items():
                 if obj.name.lower() == self.target:
-                    player.world.look_at(obj)
+                    player.world.look_at(player, obj)
                     return
             print("Non vedo nessun", self.target)
 
@@ -89,9 +89,31 @@ class GoCommand(Command):
             print("impossibile muoversi in questa direzione")
             return
 
+class TakeCommand(Command):
+    r = re.compile(r'^(prendi|raccogli|afferra) (.*)$')
+    def matches(self, s):
+        m = self.r.match(s)
+        self.target = None
+        if m:
+            self.target = m[2]
+            return True
+        return False
+    
+    def exec(self, player):
+        for obj in player.container.items():
+            if obj.name.lower() == self.target:
+                if obj.be("collectable"):
+                    obj.container_id = player.id
+                    print("fatto!")
+                else:
+                    print("non puoi sollevare", self.target)                     
+                return
+        print("Non vedo nessun", self.target)
+
 Commands = [
     QuitCommand,
     LookCommand,
     GoCommand,
+    TakeCommand,
 ]
 
