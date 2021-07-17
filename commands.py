@@ -90,11 +90,10 @@ class GoCommand(Command):
             return
 
 class TakeCommand(Command):
-    r = re.compile(r'^(prendi|raccogli|afferra) (.*)$')
+    r = re.compile(r'^(prendi|raccogli|afferra) (.+)$')
 
     def matches(self, s):
         m = self.r.match(s)
-        self.target = None
         if m:
             self.target = m[2]
             return True
@@ -112,11 +111,10 @@ class TakeCommand(Command):
         print("Non vedo nessun", self.target)
 
 class DropCommand(Command):
-    r = re.compile(r'^(lascia|molla) (.*)$')
+    r = re.compile(r'^(lascia|molla) (.+)$')
 
     def matches(self, s):
         m = self.r.match(s)
-        self.target = None
         if m:
             self.target = m[2]
             return True
@@ -131,11 +129,25 @@ class DropCommand(Command):
                 return
         print("Non hai", self.target)
 
+class SayCommand(Command):
+    r = re.compile(r'^(di|dì|pronuncia|urla|sussurra|bisbiglia)(:| ) *["\']?(.+?)["\']?$')
+
+    def matches(self, s):
+        m=self.r.match(s)
+        if m:
+            self.phrase=m[3]
+            return True
+        return False
+
+    def exec(self, player):
+        print(player.name+ ":", self.phrase)
+        
 Commands = [
     QuitCommand,
     LookCommand,
     GoCommand,
     TakeCommand,
     DropCommand,
+    SayCommand,
 ]
 
