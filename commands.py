@@ -137,7 +137,7 @@ class TakeCommand(Command):
 
 class DropCommand(Command):
     r = re.compile(r'^(lascia|molla) (.+)$')
-    r2 = re.compile(r'^(metti|lascia|inserisci) (.+) (dentro|in|nel|sul|nella|sullo|sotto|sopra) (.+)$')
+    r2 = re.compile(r'^(metti|lascia|inserisci) (.+) (dentro|in|nel|nello|nella|nell\'|sull\'|sul|nella|sullo|sotto|sopra) (.+)$')
 
     def matches(self, s):
         m = self.r2.match(s)
@@ -242,6 +242,65 @@ class OpenCommand(Command):
                     print("è vuoto")
                 return
         print("Non vedo nessun", self.target)
+
+class EnterCommand(Command):
+    r = re.compile(r'^(entra) (in|nel|nell\'|nello|nella|dentro) (.+)$')
+
+    def matches(self, s):
+        m = self.r.match(s)
+        if m:
+            self.target = m[3]
+            return True
+        return False
+    
+    def exec(self, player):
+        for obj in player.container.visible_items() + player.visible_items():
+            if obj.name.lower() == self.target:
+                if not obj.is_reachable_by(player):
+                    print("non arrivi a", obj.name)
+                    return
+                if obj.container == player:
+                    print("per problemi di manutenzione non puoi entrare in un'oggetto che hai in mano, perfavore lasciare l'oggetto in cui si desidera entrare")
+                    return
+                if not obj.be("container"):
+                    print("non puoi entrare dentro", obj.name)
+                    return
+                if obj.closed:
+                    print(obj.name, "è chiuso")
+                    return
+                else:
+                    player["container_id"] = obj.id
+                    print("sei entrato dentro", obj.name)
+                    return
+        else:
+            print("non vedo", self.target)
+
+class ExitCommand(Command):
+    r = re.compile(r'^(esci|emergi) (da|dal|dalla|dallo) (.+)$')
+
+    def matches(self, s):
+        m = self.r.match(s)
+        if m:
+            self.target = m[3]
+            return True
+        return False
+    
+    def exec(self, player):
+        if self.target != player.container.name.lower():
+            print("non sei dentro", self.target)
+            return
+        if player.container.container:
+            if player.container.closed:
+                print(player.container.name, "è chiuso")
+                return
+            print("sei uscito da", player.container.name)
+            player["container_id"] = player.container["container_id"]
+        else:
+            if player.container.passages:
+                print("devi dire una direzione per uscire")
+            else:
+                print("non puoi uscire :( !")     
+
         
 Commands = [
     DebugCommand,
@@ -252,5 +311,7 @@ Commands = [
     DropCommand,
     SayCommand,
     OpenCommand,
+    EnterCommand,
+    ExitCommand,
 ]
 
