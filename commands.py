@@ -137,11 +137,18 @@ class TakeCommand(Command):
 
 class DropCommand(Command):
     r = re.compile(r'^(lascia|molla) (.+)$')
+    r2 = re.compile(r'^(metti|lascia|inserisci) (.+) (dentro|in|nel|sul|nella|sullo|sotto|sopra) (.+)$')
 
     def matches(self, s):
+        m = self.r2.match(s)
+        if m:
+            self.target = m[2]
+            self.box = m[4]
+            return True
         m = self.r.match(s)
         if m:
             self.target = m[2]
+            self.box = None
             return True
         return False
     
@@ -149,10 +156,34 @@ class DropCommand(Command):
         for obj in player.items():
             if obj.name.lower() == self.target:
                 assert obj.be("collectable")
-                obj["container_id"] = player.container.id
-                print("hai lasciato", obj.name)                     
+                break
+        else:
+            print("Non hai", self.target)
+            return
+        if self.box:
+            for box in player.visible_items() + player.container.visible_items():
+                if box.name.lower() == self.box:
+                    if not box.is_reachable_by(player):
+                        print(box.name, "irraggiungibile")
+                        return
+                    if not box.be("container"):
+                        print ("non puoi mettere", obj.name, "dentro", box.name)
+                        return
+                    if box.closed:
+                        print(box.name, "è chiuso")
+                        return    
+                    if box == obj:
+                        print("stai provando a rompere lo spaziotempo,non va bene,sciocco hobbit")
+                        return
+                    break
+            else:
+                print("non vedo", self.box)
                 return
-        print("Non hai", self.target)
+            obj["container_id"] = box.id
+            print("hai messo", obj.name, "dentro", box.name)     
+        else:
+            obj["container_id"] = player.container.id
+            print("hai lasciato", obj.name)                     
 
 class SayCommand(Command):
     r = re.compile(r'^(di|dì|pronuncia|urla|sussurra|bisbiglia)(:| ) *["\']?(.+?)["\']?$')

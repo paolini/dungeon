@@ -11,11 +11,19 @@ cellar = world.add({
 kitchen = world.add({
     'attributes': ["room"],
     'name': "cucina",
-    'description': "Sei in una bella cucina pulita. Sul lato sud le scale portano verso l'oscurità.",
+    'description': "Sei in una bella cucina pulita. Sul lato sud le scale portano verso l'oscurità. Sul lato est è presente una porticina",
 })
 
 cellar.set_passage(kitchen, 'u')
 cellar.set_passage(kitchen, 'n')
+
+dining_room = world.add({
+    'attributes': ["room"],
+    'name': "sala da pranzo",
+    'description': "un'enorme tavolata apparecchiata circondata da sedie e sgabelli riempe la lunga sala, trofei di caccia ne adornano i muri",
+})
+
+dining_room.set_passage(kitchen, 'w')
 
 sword = world.add({
     'attributes': ["weapon", "collectable"],
@@ -34,7 +42,7 @@ chest = world.add({
     'container_id':cellar.id})
 
 sugar_jar = world.add({
-    'attributes': ["collectable", "openable"],
+    'attributes': ["collectable", "openable","container"],
     'closed': True,
     'name': "barattolo",
     'description': "è pieno di zucchero",

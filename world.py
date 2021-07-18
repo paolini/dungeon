@@ -21,6 +21,9 @@ class Item(dict):
         return [obj for obj in self.world.items() if obj.container == self]
 
     def visible_items(self):
+        """
+        restituisce un elenco degli items di self che sono visibili
+        """
         l = []
         for o in self.items():
             l.append(o)
