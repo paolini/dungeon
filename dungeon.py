@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-from commands import Command, Commands
+from commands import Commands, QuitCommand
 
 def play(player, world):
     print("Ciao, {}".format(player.name))
@@ -14,17 +14,16 @@ def play(player, world):
                 if room.id in player.visited_ids:
                     print(room.name)
                 else:
-                    print(room.description)
+                    world.look_at(player, room)
                     player['visited_ids'].append(room.id)
         player.last_container = room
             
-        s = input("comando> ")
-        s = s.strip()
+        s = input("comando> ").lower().strip()
         matches = [cmd for cmd in [Command(world,player) for Command in Commands] if cmd.matches(s)]
         if len(matches) == 1:
-            r = matches[0].exec(player)
-            if r is Command.QUIT:
-                print("Alla prossima!")
+            command, = matches
+            r = command.exec(player)
+            if isinstance(command, QuitCommand):
                 break
         elif len(matches) == 0:
             print("Mi spiace, non ho capito...")

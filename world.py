@@ -9,7 +9,7 @@ class Item(dict):
             return super().__getitem__(key)
         except KeyError:
             try:
-                return self.world.items[super().__getitem__(key + '_id')]
+                return self.world.item(super().__getitem__(key + '_id'))
             except KeyError:
                 self[key] = None 
                 return None
@@ -18,16 +18,23 @@ class Item(dict):
         return self[key]
 
     def items(self):
-        return [obj for obj in self.world.items.values() if obj.container == self]
+        return [obj for obj in self.world.items() if obj.container == self]
 
-    def collectable_items(self):
+    def visible_items(self):
         l = []
         for o in self.items():
-            if o.be("collectable"):
-                l.append(o)
+            l.append(o)
             if not o.closed:
-                l = l + o.collectable_items()
+                l = l + o.visible_items()
         return l
+
+    def is_reachable_by(self, player):
+        if self.container == player or self.container == player.container:
+            return True
+        elif self.container.is_reachable_by(player) and not self.container.closed:
+            return True
+        else:
+            return False 
 
     def set_passage(self, room, dir, rev_dir=None):
         if rev_dir is None:
@@ -45,13 +52,19 @@ class Item(dict):
 class World:
     def __init__(self):
         self.MAX_ID = 0
-        self.items = {}
+        self.id_to_items = {}
+
+    def items(self):
+        return self.id_to_items.values()
+
+    def item(self, id):
+        return self.id_to_items[id]
     
     def add(self, item):
         self.MAX_ID += 1
         if not isinstance(item, Item):
             item = Item(self, self.MAX_ID, item)
-        self.items[self.MAX_ID] = item
+        self.id_to_items[self.MAX_ID] = item
         return item
 
     def look_at(self, player, item):

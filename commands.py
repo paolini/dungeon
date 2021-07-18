@@ -1,9 +1,32 @@
 import re
 
 class Command:
-    QUIT = False
     def __init__(self, world, player):
         pass
+
+class DebugCommand(Command):
+    r = re.compile("^/debug (.+)$")
+
+    def matches(self, s):
+        m = self.r.match(s)
+        if m:
+            self.target = m[1]
+            return True 
+        else:
+            return False
+
+    def exec(self, player):
+        count = 0
+        try:
+            self.target = int(self.target)
+        except ValueError:
+            pass
+        for obj in player.world.items():
+            if obj.name.lower() == self.target or obj.id == self.target:
+                print("{}[id={}]: {}".format(obj.name, obj.id, obj))
+                count += 1
+        if count == 0:
+            print(self.target + ": nessun oggetto con questo nome")
 
 class QuitCommand(Command):
     def matches(self, s):
@@ -14,13 +37,12 @@ class QuitCommand(Command):
         return False
     
     def exec(self, player):
-        return self.QUIT
+        print("Alla prossima!")
 
 class LookCommand(Command):
     r = re.compile("^(guarda|osserva|ispeziona) (.+)$")
 
     def matches(self, s):
-        s = s.lower()
         self.target = None
         if s in ["guarda", "guarda in giro", "guardati in giro", 
             "guardati intorno", "guardati aggiro", "osserva", "ispeziona"]:
@@ -60,7 +82,6 @@ class GoCommand(Command):
         return None
 
     def matches(self, s):
-        s = s.lower()
         self.dir = self.direction(s)
         if self.dir is not None:
             return True
@@ -100,15 +121,17 @@ class TakeCommand(Command):
         return False
     
     def exec(self, player):
-        for obj in player.container.collectable_items() + player.collectable_items():
+        for obj in player.container.visible_items() + player.visible_items():
             if obj == player:
                 continue
             if obj.name.lower() == self.target:
-                if obj.be("collectable"):
-                    obj["container_id"] = player.id
-                    print("fatto!")
+                if not obj.be("collectable"):
+                    print("non puoi sollevare", obj.name)
+                elif not obj.is_reachable_by(player):
+                    print("non puoi raggiungere", obj.name)
                 else:
-                    print("non puoi sollevare", self.target)                     
+                    obj["container_id"] = player.id
+                    print("Ho preso", obj.name)
                 return
         print("Non vedo nessun", self.target)
 
@@ -155,30 +178,42 @@ class OpenCommand(Command):
         return False
     
     def exec(self, player):
-        for obj in player.container.collectable_items() + player.collectable_items():
+        for obj in player.container.visible_items() + player.visible_items():
             if obj.name.lower() == self.target:
-                if obj.be("openable"):
-                    if obj.closed:
-                        if obj.locked:
-                            for o in player.items():
-                                if obj == o.opens :
-                                    obj["locked"] = False
-                                    obj["closed"] = False
-                                    print("hai aperto", obj.name, "con", o.name)
-                                    break
-                            else:
-                                print("non hai la chiave per aprire", obj.name)
-                        else:
-                            obj["closed"] = False
-                            print("hai aperto", obj.name)
-                    else:
-                        print("sciocco hobbit", obj.name, "è già aperto")
-                else:
+                if not obj.is_reachable_by(player):
+                    print("non riesco a raggiungere", obj.name)
+                    return
+                if not obj.be("openable"):
                     print("non puoi aprire", obj.name)
+                    return
+                if not obj.closed:
+                    print("sciocco hobbit", obj.name, "è già aperto")
+                    return
+                if obj.locked:
+                    for o in player.items():
+                        if obj == o.opens :
+                            obj["locked"] = False
+                            obj["closed"] = False
+                            print("hai aperto", obj.name, "con", o.name)
+                            break
+                    else:
+                        print("non hai la chiave per aprire", obj.name)
+                        return
+                else:
+                    obj["closed"] = False
+                    print("hai aperto", obj.name)
+                lst = obj.items()
+                if lst:
+                    print("contiene:")
+                    for x in lst:
+                        print("-", x.name)
+                else:
+                    print("è vuoto")
                 return
         print("Non vedo nessun", self.target)
         
 Commands = [
+    DebugCommand,
     QuitCommand,
     LookCommand,
     GoCommand,
