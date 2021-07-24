@@ -1,5 +1,8 @@
 doctype html
 html
+  script(src="https://unpkg.com/react@16/umd/react.production.min.js")
+  script(src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js")
+  script(src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js")
   body
-    h1 My Site
-    p Welcome to my super lame site.
+    div(id="mydiv")
+    script(src="client.js" type="text/babel")
