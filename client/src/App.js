@@ -6,8 +6,18 @@ import './App.css';
 const client = new W3CWebSocket('ws://127.0.0.1:8999');
 
 class App extends Component {
-  componentDidMount() {
+  constructor() {
+    super();
+    this.state = {messages: ["msg1", "msg2",]};
+  }
 
+  add_message(msg) {
+    let messages = this.state.messages;
+    messages.push(msg);
+    this.setState({"messages": messages});
+  } 
+
+  componentDidMount() {
     client.onopen = () => {
       console.log('WebSocket Client Connected');
     };
@@ -17,6 +27,7 @@ class App extends Component {
     };
 
     client.onerror = (message) => {
+      this.add_message("websocket connection error");
       console.log("ERROR: " + message);
     }
   }
@@ -26,6 +37,7 @@ class App extends Component {
       <div className="App">
         <header className="App-header">
           <ul>
+              { this.state.messages.map((msg, i) => <li key={ i }>{ msg }</li>) }          
           </ul>
         </header>
       </div>
