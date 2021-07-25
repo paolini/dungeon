@@ -8,6 +8,7 @@ function play(player, world, input) {
     const print = world.print;
     const room = world.item(player.container_id);
     player.last_container_id = room.id;
+    if (!player.visited_ids) player.visited_ids = [];
     if (input) {
         input.toLowerCase();
         let matches = commands.map(cmd => cmd(input)).filter(cmd => (cmd != null));
@@ -22,7 +23,7 @@ function play(player, world, input) {
             print("Comando ambiguo...")
         }
     }
-    if (player.container_id && (player.container_id != room.id || input === null)) {
+    if (player.container_id && (player.container_id != room.id || !input)) {
         const new_room = world.item(player.container_id);
         if (player.visited_ids.includes(new_room.id)) {
             print(new_room.name)
@@ -62,7 +63,11 @@ world.all_items().forEach(item => {
     if (item.name === 'Rodolfo') rodolfo = item;
 })
 
-main(rodolfo, world);
+if (require.main === module) {
+    main(rodolfo, world);
+}
 
-// console.log(world.items_in(rodolfo))
+exports.play = play;
+exports.world = world;
+exports.player = rodolfo;
 

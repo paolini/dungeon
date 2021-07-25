@@ -3,6 +3,8 @@ import * as http from 'http';
 import * as WebSocket from 'ws';
 import * as path from 'path';
 
+const dungeon = require('../../dungeon');
+
 const app = express();
 
 // view engine setup
@@ -28,16 +30,28 @@ wss.on('connection', (ws: WebSocket) => {
     connection_count ++;
     const connection_id = connection_count;
     //send immediatly a feedback to the incoming connection    
-    ws.send(`Hi there, I am a WebSocket server. You are connection #${connection_id}`);
+    ws.send(`CON #${connection_id}`);
+    console.log(`${connection_id} CONNECTED`);
 
-    //connection is up, let's add a simple simple event
+    function print(msg: string) {
+        console.log(`OUT[${connection_id}] ${msg}`);
+        ws.send(msg);
+    }
+
+    dungeon.world.print = print;
+    dungeon.play(dungeon.player, dungeon.world);
+
     ws.on('message', (message: string) => {
-
         //log the received message and send it back to the client
         console.log('received from %d: %s', connection_id, message);
-        ws.send(`Hello, you sent -> ${message}`);
+        if (message.startsWith("CMD ")) {
+            message = message.substring(4);
+            dungeon.world.print = print;
+            dungeon.play(dungeon.player, dungeon.world, message);
+        } else {
+            ws.send(`Hello, you sent -> ${message}`);
+        }
     });
-
 });
 
 //start our server

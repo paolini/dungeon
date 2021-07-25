@@ -40,7 +40,7 @@ class App extends Component {
 
   command(msg) {
     this.add_message(`< ${msg}`);
-    this.client.send(msg);
+    this.client.send("CMD " + msg);
   }
 
   inputChange(event) {

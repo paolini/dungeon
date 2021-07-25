@@ -4,6 +4,8 @@
 
 # server
 
+In `server` directory:
+t
 * to compile typescript code
 
   tsc
