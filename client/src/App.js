@@ -14,12 +14,10 @@ class App extends Component {
   }
   
   componentDidMount() {
-    const hostname = window.location.hostname;
-    const port = window.location.port;
-    const WS_URL = (port === "") ? 
-        'ws://' + hostname
-        : 'ws://' + hostname + ':' + 8999;
-        
+    const WS_URL = (window.location.protocol === "https:" ? "wss://" : "ws://") 
+    	+ window.location.hostname
+  	  + (window.location.port ? ":" + window.location.port : "");
+
     this.client = new W3CWebSocket(WS_URL);
 
     
