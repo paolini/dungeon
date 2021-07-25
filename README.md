@@ -1,3 +1,7 @@
+# command line execution:
+
+  nodejs dungeon.js
+
 # server
 
 * to compile typescript code
