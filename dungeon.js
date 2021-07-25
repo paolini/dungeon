@@ -4,6 +4,7 @@ const { loadWorld } = require("./world");
 commands = require("./commands").commands;
 
 function play(player, world, input) {
+//    console.log(`play(${player.id}, world, ${input})`);
     if (!player.container_id) {
         if (player.spawn_id) {
             player.container_id = player.spawn_id;

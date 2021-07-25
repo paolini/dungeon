@@ -18,6 +18,20 @@ var connections = [];
 
 var connection_count = 0;
 
+function print(player, msg) {
+//    console.log(`print(${player.id}, "${msg}")`);
+    connections.forEach(connection => {
+        if (connection.player.id === player.id) {
+            console.log(`${connection.id} OUT ${msg}`);
+            connection.ws.send("OUT " + msg);
+        } else {
+            console.log(`${connection.player.id} != ${player.id}`);
+        }
+    });
+}
+
+dungeon.world.print = print;
+
 wss.on('connection', (ws, req, client) => {
     connection_count ++;
     const connection_id = connection_count;
@@ -27,26 +41,21 @@ wss.on('connection', (ws, req, client) => {
 
     const connection = {
         "id": connection_id,
+        "ws": ws,
         "client": client,
         "player": null,
         "world": null
     };
 
+    var player = null;
+
     connections.push(connection);
 
-    function print(player, msg) {
-        console.log(`${connection_id} OUT ${msg}`);
-        ws.send("OUT " + msg);
-    }
-
-    dungeon.world.print = print;
-
     ws.on('message', (message) => {
-        //log the received message and send it back to the client
-        console.log(`${connection_id}>${message}`, connection_id, message);
+//        console.log("--- " + message);
         if (message.startsWith("STA ")) {
             message = message.substring(4);
-            const player = dungeon.world.add_item({
+            player = dungeon.world.add_item({
                 attributes: ["player", "container"],
                 name: message,
                 description: "un bel tipo",
@@ -55,13 +64,12 @@ wss.on('connection', (ws, req, client) => {
             connection.player = player;
             connection.world = dungeon.world;
             ws.send("PLA " + player.id);
-            console.log(connection_id + " PLAY");
+            console.log(connection_id + " PLAY " + player.id);
             dungeon.play(player, dungeon.world);
             dungeon.world.where(player);
         } else if (message.startsWith("CMD ")) {
             message = message.substring(4);
-            dungeon.world.print = print;
-            dungeon.play(dungeon.player, dungeon.world, message);
+            dungeon.play(player, dungeon.world, message);
         } else {
             ws.send(`Hello, you wrote -> ${message}`);
         }

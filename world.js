@@ -12,7 +12,7 @@ class World {
 
     add_item(data) {
         if (!data.id) {
-            data.id = this.max_id;
+            data.id = this.max_id + 1;
         }
         this.max_id = Math.max(this.max_id, data.id);
         this.id_to_items[data.id] = data;
@@ -100,8 +100,7 @@ class World {
             if (player.visited_ids.includes(room.id)) {
                 this.print(player, `Sei in ${ room .name }`);
             } else {
-                player.visited_ids.push(room.id);
-                this.print(player, room.description || room.name);
+                this.look_at(player, room);
             }
         } else {
             this.print(player, `Sei nel nulla! [${player.container_id}]`);
