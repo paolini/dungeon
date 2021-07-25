@@ -7,24 +7,7 @@ const dungeon = require('./dungeon');
 
 const app = express();
 
-/*
-// view engine setup
-app.set('views', path.join(__dirname, '../views'));
-app.set('view engine', 'pug');
-
-// static files setup
-app.use(express.static('public'));
-
-app.get("/", (req, res) => {
-    res.render("index");
-});
-*/
-
 app.use(express.static("client/build"));
-
-app.get("/", (req, res) => {
-    res.sendFile("index.html");
-})
 
 //initialize a simple http server
 const server = http.createServer(app);

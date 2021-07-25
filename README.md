@@ -4,6 +4,10 @@
 
 # server
 
+* to download the required packages
+
+  npm install
+
 * to compile typescript code
 
   tsc
