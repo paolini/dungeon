@@ -25,10 +25,10 @@
 
 * enter directory `client` and run with:
 
-  npm start
+  REACT_APP_WSURL="ws://localhost:8999" npm start
 
 this will start a development server to serve static files while trying to 
-connect to the game server with websockets.
+connect to the game server with websockets. 
   
 # deployment
 

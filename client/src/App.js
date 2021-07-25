@@ -18,11 +18,13 @@ class App extends Component {
   }
   
   connect() {
-    let WS_URL = (window.location.protocol === "https:" ? "wss://" : "ws://") 
+    let WS_URL = process.env.REACT_APP_WSURL || (
+      (window.location.protocol === "https:" ? "wss://" : "ws://") 
     	+ window.location.hostname
-  	  + (window.location.port ? ":" + window.location.port : "");
+  	  + (window.location.port ? ":" + window.location.port : ""));
 
-    // WS_URL = "ws://localhost:8999"; // for development;
+    // to override the WSURL export REACT_APP_WSURL environment variable. Example:
+    // export REACT_APP_WSURL="ws://localhost:8999"
 
     this.client = new W3CWebSocket(WS_URL);
     this.add_message("connessione all'indirizzo " + WS_URL);
