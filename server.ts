@@ -3,10 +3,11 @@ import * as http from 'http';
 import * as WebSocket from 'ws';
 import * as path from 'path';
 
-const dungeon = require('../../dungeon');
+const dungeon = require('./dungeon');
 
 const app = express();
 
+/*
 // view engine setup
 app.set('views', path.join(__dirname, '../views'));
 app.set('view engine', 'pug');
@@ -17,6 +18,13 @@ app.use(express.static('public'));
 app.get("/", (req, res) => {
     res.render("index");
 });
+*/
+
+app.use(express.static("client/build"));
+
+app.get("/", (req, res) => {
+    res.sendFile("index.html");
+})
 
 //initialize a simple http server
 const server = http.createServer(app);

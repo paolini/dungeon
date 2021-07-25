@@ -4,15 +4,13 @@
 
 # server
 
-In `server` directory:
-t
 * to compile typescript code
 
   tsc
   
 * then run the server
   
-  node ./dist/server.js
+  node server.js
 
 # client
 
