@@ -22,7 +22,7 @@ class App extends Component {
     	+ window.location.hostname
   	  + (window.location.port ? ":" + window.location.port : "");
 
-    WS_URL = "ws://localhost:8999"; // for development;
+    // WS_URL = "ws://localhost:8999"; // for development;
 
     this.client = new W3CWebSocket(WS_URL);
     this.add_message("connessione all'indirizzo " + WS_URL);
