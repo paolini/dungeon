@@ -24,13 +24,21 @@ function print(player, msg) {
         if (connection.player.id === player.id) {
             console.log(`${connection.id} OUT ${msg}`);
             connection.ws.send("OUT " + msg);
-        } else {
-            console.log(`${connection.player.id} != ${player.id}`);
         }
     });
 }
 
-dungeon.world.print = print;
+function broadcast(item, msg) {
+    connections.forEach(connection => {
+        if (connection.player.id !== item.id) {
+            console.log(`${connection.id} OUT ${msg}`);
+            connection.ws.send("OUT " + msg);
+        }
+    });
+}
+
+dungeon.world.print = print; // ATTENZIONE: non c'è il bind!
+dungeon.world.broadcast = broadcast;
 
 wss.on('connection', (ws, req, client) => {
     connection_count ++;
