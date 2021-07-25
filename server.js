@@ -21,7 +21,7 @@ var connection_count = 0;
 function print(player, msg) {
 //    console.log(`print(${player.id}, "${msg}")`);
     connections.forEach(connection => {
-        if (connection.player.id === player.id) {
+        if (connection.player && connection.player.id === player.id) {
             console.log(`${connection.id} OUT ${msg}`);
             connection.ws.send("OUT " + msg);
         }
@@ -30,7 +30,7 @@ function print(player, msg) {
 
 function broadcast(item, msg) {
     connections.forEach(connection => {
-        if (connection.player.id !== item.id) {
+        if (connection.player && connection.player.id !== item.id) {
             console.log(`${connection.id} OUT ${msg}`);
             connection.ws.send("OUT " + msg);
         }
