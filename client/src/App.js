@@ -3,7 +3,6 @@ import { w3cwebsocket as W3CWebSocket } from "websocket";
 
 import './App.css';
 
-
 class App extends Component {
   constructor() {
     super();
@@ -15,7 +14,14 @@ class App extends Component {
   }
   
   componentDidMount() {
-    this.client = new W3CWebSocket('ws://127.0.0.1:8999');
+    const hostname = window.location.hostname;
+    const port = window.location.port;
+    const WS_URL = (port === "") ? 
+        'ws://' + hostname
+        : 'ws://' + hostname + ':' + 8999;
+        
+    this.client = new W3CWebSocket(WS_URL);
+
     
     this.client.onopen = () => {
       this.add_message("websocket Client connected");

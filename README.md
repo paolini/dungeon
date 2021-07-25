@@ -18,6 +18,11 @@
 
 # client
 
+* install & build
+
+  npm install
+  npm run build
+
 * enter directory `client` and run with:
 
   npm start
