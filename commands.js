@@ -4,8 +4,9 @@ function quit(input) {
     input.trim();
     if (["basta", "fine", "quit", "abbandona", "bye", "esci", "x"].includes(input)) {
         return (player, world) => {
-            if (input.length > 1) world.print("Basta che scrivi 'x' per uscire");
-            world.print("Alla prossima!");
+            if (input.length > 1) world.print(player, "Basta che scrivi 'x' per uscire");
+            world.print(player, "Alla prossima!");
+            world.broadcast(player, `${player.name} se n'è andato`);
             return true;
         };
     }
@@ -26,9 +27,9 @@ function debug(input) {
                 target = world.item_by_name(target_name);
             }
             if (target) {
-                world.print(`${target.name}=${JSON.stringify(target)}`);
+                world.print(player, `${target.name}=${JSON.stringify(target)}`);
             } else {
-                world.print(`${target_name}: nessun oggetto con questo nome`);
+                world.print(player, `${target_name}: nessun oggetto con questo nome`);
             }
         }
     }
@@ -50,7 +51,7 @@ function look(input) {
             let items = world.items_in(player.container_id).concat(world.items_in(player));
             const target = world.item_by_name(target_name, items);
             if (target) world.look_at(player, target);
-            else world.print(`Non vedo nessun ${target_name}`);
+            else world.print(player, `Non vedo nessun ${target_name}`);
         }
     }
 }
@@ -71,16 +72,20 @@ function go(input) {
     }
 
     function move(player, world, direction) {
-        const passages = world.item(player.container_id).passages;
+        const old_room = world.item(player.container_id);
+        const passages = old_room.passages;
         if (passages) {
             const room_id = passages[direction];
             if (room_id) {
-                player.container_id = room_id;
+                const room = world.item(room_id);
+                player.container_id = room.id;
+                world.where(player);
+                world.broadcast(player, `${player.name} è andato da ${old_room.name} a ${room.name}`)
             } else {
-                world.print(`impossibile muoversi in questa direzione`);
+                world.print(player, `impossibile muoversi in questa direzione`);
             }
         } else {
-            world.print(`non c'è nessun passaggio`);
+            world.print(player, `non c'è nessun passaggio`);
         }
     }
 
@@ -92,13 +97,13 @@ function go(input) {
             dir = direction(m[2]);
             if (dir) {
                 return (player, world) => {
-                    world.print(`Basta che dici: ${m[2]}`);
-                    if (m[2].length > 1) world.print(`...o anche solo: ${dir}`);
+                    world.print(player, `Basta che dici: ${m[2]}`);
+                    if (m[2].length > 1) world.print(player, `...o anche solo: ${dir}`);
                     move(player, world, dir);
                 }
             } else {
                 return (player, world) => {
-                    world.print(`${m[2]} non è una direzione valida. Prova: n,nord,s,sud,e,est,w,ovest,u,alto,d,basso`);
+                    world.print(player, `${m[2]} non è una direzione valida. Prova: n,nord,s,sud,e,est,w,ovest,u,alto,d,basso`);
                 }
             }
         }
@@ -117,16 +122,17 @@ function take(input) {
                 world.visible_items_in(player.container_id).concat(
                 world.visible_items_in(player)));
             if (!item) {
-                world.print(`non vedo nessun ${target_name}`);
+                world.print(player, `non vedo nessun ${target_name}`);
                 return;
             }
             if (!(item.attributes && item.attributes.includes("collectable"))) {
-                world.print(`non puoi sollevare ${item.name}`);
+                world.print(player, `non puoi sollevare ${item.name}`);
             } else if (!world.is_reachable_by(item, player)) {
-                world.print(`non puoi raggiungere ${item.name}`);
+                world.print(player, `non puoi raggiungere ${item.name}`);
             } else {
                 item.container_id = player.id;
-                world.print(`ho preso ${item.name}`);
+                world.print(player, `ho preso ${item.name}`);
+                world.broadcast(player, `${player.name} ha preso ${item.name}`);
             }
         }
     }
@@ -136,12 +142,12 @@ function put(input) {
     function check_have(target_name, player, world) {
         const item = world.item_by_name(target_name, world.items_in(player));
         if (!item) {
-            world.print(`non hai ${target_name}`);
+            world.print(player, `non hai ${target_name}`);
             return null;
         } else if (item.attributes.includes("collectable")) {
             return item;
         } else {
-            world.print(`non puoi sollevare ${target_name}`);
+            world.print(player, `non puoi sollevare ${target_name}`);
             return null;
         }
     }
@@ -159,18 +165,19 @@ function put(input) {
                 world.visible_items_in(player.container_id)));
             if (item) {
                 if (!box) {
-                    world.print(`non vedo ${box_name}`);
+                    world.print(player, `non vedo ${box_name}`);
                 } else if (!world.is_reachable_by(box, player)) {
-                    world.print(`${box.name} irraggiungibile`);
+                    world.print(player, `${box.name} irraggiungibile`);
                 } else if (!box.attributes.includes("container")) {
-                    world.print(`non puoi mettere ${item.name} dentro ${box.name}`);
+                    world.print(player, `non puoi mettere ${item.name} dentro ${box.name}`);
                 } else if (box.closed) {
-                    world.print(`${box.name} è chiuso`);
+                    world.print(player, `${box.name} è chiuso`);
                 } else if (box.id === item.id) {
-                    world.print(`Stai provando a rompere lo spaziotempo. Sciocco hobbit!`);
+                    world.print(player, `Stai provando a rompere lo spaziotempo. Sciocco hobbit!`);
                 } else {
                     item.container_id = player.container_id;
-                    world.print(`hai messo ${item.name} dentro ${box.name}`);
+                    world.print(player, `hai messo ${item.name} dentro ${box.name}`);
+                    world.broadcast(player, `${player.name} ha messo ${item.name} in ${box.name}`);
                 }
             }
         }
@@ -183,9 +190,10 @@ function put(input) {
             const item = world.item_by_name(item_name, world.items_in(player));
             if (item) {
                 item.container_id = player.container_id;
-                world.print(`hai lasciato ${item.name}`);
+                world.print(player, `hai lasciato ${item.name}`);
+                world.broadcast(player, `${player.name} ha lasciato ${item.name}`);
             } else {
-                world.print(`non hai ${item_name}`);
+                world.print(player, `non hai ${item_name}`);
             }
         }
     }
@@ -197,7 +205,8 @@ function say(input) {
     if (m) {
         const phrase = m[3];
         return (player, world) => {
-            world.print(`${player.name}: ${phrase}`);
+            world.print(player, `${player.name}: ${phrase}`);
+            world.broadcast(player, `${player.name}: ${phrase}`);
         }
     }
 }
@@ -212,37 +221,38 @@ function open(input) {
                 world.visible_items_in(player.container_id).concat(
                     world.visible_items_in(player)));
             function done(item) {
+                world.broadcast(player, `${player.name} ha aperto ${item.name}`);
                 const items = world.items_in(item);
                 if (items.length>0) {
-                    world.print(`contiene:`);
+                    world.print(player, `contiene:`);
                     items.forEach(obj => {
-                        world.print(`- ${obj.name}`);
+                        world.print(player, `- ${obj.name}`);
                     });
                 } else {
-                    world.print(`è vuoto!`);
+                    world.print(player, `è vuoto!`);
                 }
             }
             if (!item) {
-                world.print(`non vedo nessun ${item_name}`);
+                world.print(player, `non vedo nessun ${item_name}`);
             } else if (!world.is_reachable_by(item, player)) {
-                world.print(`non riesco a raggiungere ${item.name}`);
+                world.print(player, `non riesco a raggiungere ${item.name}`);
             } else if (!item.attributes.includes("openable")) {
-                world.print(`non puoi aprire ${item.name}`);
+                world.print(player, `non puoi aprire ${item.name}`);
             } else if (!item.closed) {
-                world.print(`sciocco hobbit, ${item.name} è già aperto`);
+                world.print(player, `sciocco hobbit, ${item.name} è già aperto`);
             } else if (item.locked) {
                 const keys = world.items_in(player).filter(obj => (obj.opens_id === item.id));
                 if (keys.length>0) {
                     item.locked = false;
                     item.closed = false;
-                    world.print(`hai aperto ${item.name} con ${keys[0].name}`);
+                    world.print(player, `hai aperto ${item.name} con ${keys[0].name}`);
                     done(item);
                 } else {
-                    world.print(`non hai la chiave per aprire ${item.name}`);
+                    world.print(player, `non hai la chiave per aprire ${item.name}`);
                 }
             } else {
                 item.closed = false;
-                world.print(`hai aperto ${item.name}`);
+                world.print(player, `hai aperto ${item.name}`);
                 done(item);
             }
         }
@@ -259,18 +269,19 @@ function enter(input) {
                 world.visible_items_in(player.container_id).concat(
                     world.visible_items_in(player)));
             if (!obj) {
-                world.print(`non vedo ${obj_name}`);
+                world.print(player, `non vedo ${obj_name}`);
             } else if (!world.is_reachable_by(obj, player)) {
-                world.print(`non arrivi a ${obj.name}`);
+                world.print(player, `non arrivi a ${obj.name}`);
             } else if (obj.container_id === player.id) {
-                world.print(`per problemi di manutenzione non puoi entrare in un'oggetto che hai in mano, perfavore lasciare l'oggetto in cui si desidera entrare`);
+                world.print(player, `per problemi di manutenzione non puoi entrare in un'oggetto che hai in mano, perfavore lasciare l'oggetto in cui si desidera entrare`);
             } else if (!obj.attributes.includes("container")) {
-                world.print(`non puoi entrare dentro ${obj.name}`);
+                world.print(player, `non puoi entrare dentro ${obj.name}`);
             } else if (obj.closed) {
-                world.print(`${obj.name} è chiuso`);
+                world.print(player, `${obj.name} è chiuso`);
             } else {
                 player.container_id = obj.id;
-                world.print(`sei entrato dentro ${obj.name}`);
+                world.where(player);
+                world.broadcast(player, `${player.name} è entrato in ${obj.name}`);
             }
         }
     }
@@ -284,18 +295,20 @@ function exit(input) {
         return (player, world) => {
             const container = world.item(player.container_id);
             if (!world.has_name(container, container_name)) {
-                world.print(`non sei dentro ${container_name}`);
+                world.print(player, `non sei dentro ${container_name}`);
             } else if (container.container_id) {
                 if (container.closed) {
-                    world.print(`${container.name} è chiuso`);
+                    world.print(player, `${container.name} è chiuso`);
                 } else {
                     player.container_id = container.container_id;
-                    world.print(`sei uscito da ${container.name}`);
+                    world.print(player, `sei uscito da ${container.name}`);
+                    world.where(player);
+                    world.broadcast(player, `${player.name} è uscito da ${container.name}`);
                 }
             } else if (container.passages) {
-                world.print(`devi dire una direzione per uscire`);
+                world.print(player, `devi dire una direzione per uscire`);
             } else {
-                world.print(`apparentemente sei in un luogo senza uscite!`);
+                world.print(player, `apparentemente sei in un luogo senza uscite!`);
             }
         }
     }

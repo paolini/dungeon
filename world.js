@@ -1,13 +1,30 @@
-const { IncomingMessage } = require("http");
+const fs = require("fs");
 
 class World {
     constructor(data) {
         this.id_to_items = {};
+        this.max_id = 0;
         data.forEach((value, i) => {
-            value['id'] = i + 1,
-            this.id_to_items[i+1] = value; 
+            this.id_to_items[value.id] = value;
+            this.max_id = Math.max(this.max_id, value.id);
         })
-        this.print = console.log;
+    }
+
+    add_item(data) {
+        if (!data.id) {
+            data.id = this.max_id;
+        }
+        this.max_id = Math.max(this.max_id, data.id);
+        this.id_to_items[data.id] = data;
+        return data;
+    }
+
+    print(player, msg) {
+        console.log(msg);
+    }
+
+    broadcast(item, msg) {
+        console.log(`[${msg}]`);
     }
 
     all_items() {
@@ -76,14 +93,32 @@ class World {
         return this.is_reachable_by(container, player);
     }
 
+    where(player) {
+        if (!player.visited_ids) player.visited_ids = [];
+        if (player.container_id) {
+            const room = this.item(player.container_id);
+            if (player.visited_ids.includes(room.id)) {
+                this.print(player, `Sei in ${ room .name }`);
+            } else {
+                player.visited_ids.push(room.id);
+                this.print(player, room.description || room.name);
+            }
+        } else {
+            this.print(player, `Sei nel nulla! [${player.container_id}]`);
+        }
+    }
+
     look_at(player, item) {
-        const print = this.print;
-        print(item.description || item.name);
+        this.print(player, item.description || item.name);
+        if (!item) {
+            this.print(player, "c'è il nulla!");
+            return;
+        }
         if (item.closed) {
             if (item.locked) {
-                print("è chiuso a chiave");
+                this.print(player, "è chiuso a chiave");
             } else {
-                print("è chiuso");
+                this.print(player, "è chiuso");
             }
             return;
         }
@@ -91,28 +126,35 @@ class World {
         if (objs.length === 0) {
             if (item.attributes.includes("container"))  {
                 if (item.attributes.includes("living")) {
-                    print("è a mani vuote");
+                    this.print(player, "è a mani vuote");
                 } else {
-                    print("...è vuoto");
+                    this.print(player, "...è vuoto");
                 }
             } 
         } else if (objs.length === 1) {
             if (item.attributes.includes("living")) {
-                print("ha " + objs[0].name);
+                this.print(player, "ha " + objs[0].name);
             } else {
-                print("c'è " + objs[0].name);
+                this.print(player, "c'è " + objs[0].name);
             }
         } else {
             if (item.attributes.includes("living")) {
-                print("ha");
+                this.print(player, "ha");
             } else {
-                print("ci sono");
+                this.print(player, "ci sono");
             }
             objs.forEach(obj => {
-                print("- " + obj.name);
+                this.print(player, "- " + obj.name);
             })
         }
     }
 }
 
+function loadWorld(filename) {
+    const rawdata = fs.readFileSync(filename);
+    const data = JSON.parse(rawdata);
+    return new World(data);
+}
+
 exports.World = World;
+exports.loadWorld = loadWorld;

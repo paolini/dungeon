@@ -1,14 +1,21 @@
 const { abort, exit } = require("process");
 
-data = require("./data")
-World = require("./world").World
-commands = require("./commands").commands
+const { loadWorld } = require("./world");
+commands = require("./commands").commands;
 
 function play(player, world, input) {
-    const print = world.print;
-    const room = world.item(player.container_id);
-    player.last_container_id = room.id;
-    if (!player.visited_ids) player.visited_ids = [];
+    if (!player.container_id) {
+        if (player.spawn_id) {
+            player.container_id = player.spawn_id;
+        } else {
+            const rooms = world.all_items().filter(item => item.attributes.includes("spawn"));
+            if (rooms.length === 0) {
+                world.print(player, "non ho trovato nessuna stanza dove metterti...");
+            } else {
+                player.container_id = rooms[0].id;
+            }
+        }
+    }
     if (input) {
         input.toLowerCase();
         let matches = commands.map(cmd => cmd(input)).filter(cmd => (cmd != null));
@@ -18,27 +25,16 @@ function play(player, world, input) {
                 exit(0);
             }
         } else if (matches.length == 0) {
-            print("Mi spiace, non ho capito...")
+            world.print(player, "Mi spiace, non ho capito...")
         } else {
-            print("Comando ambiguo...")
-        }
-    }
-    if (player.container_id && (player.container_id != room.id || !input)) {
-        const new_room = world.item(player.container_id);
-        if (player.visited_ids.includes(new_room.id)) {
-            print(new_room.name)
-        } else {
-            world.look_at(player, new_room, print);
-            player.visited_ids.push(new_room.id);
+            world.print(player, "Comando ambiguo...")
         }
     }
 }
 
 function main(player, world) {
-    world.print(`Ciao ${player.name}`);
-    if (!player.visited_ids) {
-        player.visited_ids = [];
-    }
+    world.print(player, "Ciao!");
+
     var readline = require('readline');
     var rl = readline.createInterface({
         input: process.stdin,
@@ -47,24 +43,30 @@ function main(player, world) {
     });
 
     play(player, world, null);
+    world.where(player);
     const prompt = "COSA DEVO FARE?"
-    world.print(prompt);
+    console.log(prompt);
     rl.on('line', function(line){
         // console.log("> " + line);
         play(player, world, line);
-        world.print(prompt);
+        console.log(prompt);
     });
 }
 
-var world = new World(data.data)
-var rodolfo = null;
+var world = loadWorld("data.json")
 
 world.all_items().forEach(item => {
     if (item.name === 'Rodolfo') rodolfo = item;
 })
 
 if (require.main === module) {
-    main(rodolfo, world);
+    const players = world.all_items().filter(item => item.attributes.includes("player"));
+    if (players.length == 0) {
+        console.log("No players in world!");
+    } else {
+        const player = players[0];
+        main(player, world);
+    }
 }
 
 exports.play = play;
