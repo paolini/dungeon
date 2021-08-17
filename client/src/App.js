@@ -27,10 +27,10 @@ class App extends Component {
     // export REACT_APP_WSURL="ws://localhost:8999"
 
     this.client = new W3CWebSocket(WS_URL);
-    this.add_message("connessione all'indirizzo " + WS_URL);
+    this.add_message("connessione all'indirizzo " + WS_URL, 'warning');
 
     this.client.onopen = () => {
-      this.add_message("websocket Client connected");
+      this.add_message("websocket Client connected", 'warning');
       console.log('WebSocket Client Connected');
 
     };
@@ -42,7 +42,7 @@ class App extends Component {
         this.connection_id = parseInt(msg);
         this.setState({mode: "connected"});
       } else if (cmd === "OUT") {
-        this.add_message(`> ${ msg }`);
+        this.add_message(`${ msg }`, 'output');
       } else if (cmd === "PLA") {
         console.log("player_id " + msg);
         this.setState({mode: "play"})
@@ -52,7 +52,7 @@ class App extends Component {
     };
 
     this.client.onerror = (event) => {
-      this.add_message(`errore di connessione ${event.target.url}`);
+      this.add_message(`errore di connessione ${event.target.url}`, 'error');
       console.log("ERROR: " + event);
       this.setState({mode: "disconnected"});
     }
@@ -69,14 +69,21 @@ class App extends Component {
     this.connect();
   }
 
-  add_message(msg) {
+  componentDidUpdate() {
+    window.scrollTo(0,document.body.scrollHeight);
+    const inputEl = this.inputRef.current;
+    if (inputEl) inputEl.focus();
+  }
+
+  add_message(text, cls) {
+    if (!cls) cls="white";
     let messages = this.state.messages;
-    messages.push(msg);
+    messages.push({text, cls});
     this.setState({"messages": messages});
   } 
 
   command(msg) {
-    this.add_message(`< ${msg}`);
+    this.add_message(`${msg}`, 'input');
     this.client.send("CMD " + msg);
   }
 
@@ -92,7 +99,8 @@ class App extends Component {
       <div className="App">
         <header className="App-header">
           <ul>
-              { this.state.messages.map((msg, i) => <li key={ i }>{ msg }</li>) }          
+              { this.state.messages.map((msg, i) => 
+              <li key={ i } className={msg.cls}>{ msg.text }</li>) }          
           </ul>
           <div>
           { 
@@ -101,7 +109,7 @@ class App extends Component {
           }
           { 
             this.state.mode === "connected" &&
-            <div>
+            <div className='input'>
               <input
               ref={ this.inputNameRef }
               placeholder="nome del giocatore"
@@ -110,7 +118,7 @@ class App extends Component {
             </div>
           }
           { this.state.mode === "play" &&
-          <div>&gt;&nbsp;<input 
+          <div className='input'>&gt;&nbsp;<input 
             placeholder="cosa devo fare?"
             onKeyUp={this.inputChange}
             type="text"

@@ -3,12 +3,35 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
   font-size: calc(10px + 2vmin);
   color: white;
-}
+  font: 1.3rem Inconsolata, monospace;
+  }
 
 .App-link {
   color: #61dafb;
+}
+
+ul {
+  list-style-type: none;
+}
+
+div.input {
+  margin-left: 2ex;
+}
+
+li.input {
+  color: orange;
+}
+
+li.output {
+  color: white;
+}
+
+li.warning {
+  color: yellow;
+}
+
+li.error {
+  color: red;
 }
