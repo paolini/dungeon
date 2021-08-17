@@ -12,5 +12,11 @@ jobs:
           known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
 #      - name: Adding Known Hosts
 #        run: ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+      - name: test1
+        run: ls -al .ssh
+      - name: test2
+        run: head .ssh/id_rsa
+      - name: test3
+        run: echo "SSH_HOSTNAME" ${{ secrets.SSH_HOSTNAME }}
       - name: deploy
         run: ssh ${{ secrets.SSH_HOSTNAME }} dungeon/DEPLOY.sh
