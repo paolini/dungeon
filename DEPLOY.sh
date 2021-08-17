@@ -7,7 +7,6 @@ git pull
 # WARNING: this file might have been modified. In that case we are executing the old script
 
 npm install
-tsc
 
 pushd client
 npm install

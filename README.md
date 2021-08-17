@@ -8,10 +8,6 @@
 
   npm install
 
-* to compile typescript code
-
-  tsc
-  
 * then run the server
   
   node server.js
@@ -35,7 +31,6 @@ connect to the game server with websockets.
 * clone the repository on the server. Build:
   
   npm install
-  tsc
   pushd client
   npm install
   npm run build
