@@ -61,22 +61,29 @@ wss.on('connection', (ws, req, client) => {
     ws.on('message', (message) => {
 //        console.log("--- " + message);
         if (message.startsWith("STA ")) {
-            message = message.substring(4);
-            var player = dungeon.world.add_item({
-                attributes: ["player", "container"],
-                name: message,
-                description: "un bel tipo",
-                "connection_id": connection_id 
-            });
-            connection.player = player;
-            connection.world = dungeon.world;
-            ws.send("PLA " + player.id);
-            console.log(connection_id + " PLAY " + player.id);
-            dungeon.play(player, dungeon.world);
-            dungeon.world.where(player);
+            const name = message.substring(4);
+            var player = dungeon.world.item_by_name(name);
+            if (player) {
+                ws.send("ERR nome già utilizzato");
+                console.log("name already in use: " + name);
+            } else {
+                player = dungeon.world.add_item({
+                    attributes: ["player", "container"],
+                    'name': name,
+                    description: "un bel tipo",
+                    "connection_id": connection_id
+                });
+                connection.player = player;
+                connection.world = dungeon.world;
+                ws.send("PLA " + player.id);
+                console.log(connection_id + " PLAY " + player.id);
+                dungeon.play(player, dungeon.world);
+                dungeon.world.where(player);
+            }
         } else if (message.startsWith("CMD ")) {
             message = message.substring(4);
             dungeon.play(connection.player, connection.world, message);
+            connection.world.save("world.json");
         } else {
             ws.send(`Hello, you wrote -> ${message}`);
         }

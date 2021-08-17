@@ -14,6 +14,7 @@ function play(player, world, input) {
                 world.print(player, "non ho trovato nessuna stanza dove metterti...");
             } else {
                 player.container_id = rooms[0].id;
+                world.broadcast(player, `${player.name} è entrato in gioco`);
             }
         }
     }
@@ -54,7 +55,7 @@ function main(player, world) {
     });
 }
 
-var world = loadWorld("data.json")
+var world = loadWorld("world.json") || loadWorld("data.json")
 
 world.all_items().forEach(item => {
     if (item.name === 'Rodolfo') rodolfo = item;

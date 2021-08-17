@@ -38,7 +38,9 @@ class App extends Component {
     this.client.onmessage = (message) => {
       const cmd = message.data.substr(0, 3);
       const msg = message.data.substr(4);
-      if (cmd === "CON") {
+      if (cmd === "ERR") {
+        this.add_message(msg, 'error');
+      } if (cmd === "CON") {
         this.connection_id = parseInt(msg);
         this.setState({mode: "connected"});
       } else if (cmd === "OUT") {

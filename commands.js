@@ -1,7 +1,5 @@
 
 function quit(input) {
-    input.toLowerCase();
-    input.trim();
     if (["basta", "fine", "quit", "abbandona", "bye", "esci", "x"].includes(input)) {
         return (player, world) => {
             if (input.length > 1) world.print(player, "Basta che scrivi 'x' per uscire");
@@ -11,6 +9,14 @@ function quit(input) {
         };
     }
     return null;
+}
+
+function save(input) {
+    if (input === 'save') {
+        return (player, world) => {
+            world.save('world.json');
+        }
+    }
 }
 
 function debug(input) {
@@ -314,4 +320,4 @@ function exit(input) {
     }
 }
 
-exports.commands = [quit, debug, look, go, take, put, say, open, enter, exit];
+exports.commands = [quit, save, debug, look, go, take, put, say, open, enter, exit];

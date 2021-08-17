@@ -147,12 +147,29 @@ class World {
             })
         }
     }
+
+    save(filename) {
+        var data = this.all_items();
+        fs.writeFile(filename, JSON.stringify(data), 'utf8', function () {
+            console.log("saved world to file " + filename);
+        });
+    }
 }
 
 function loadWorld(filename) {
-    const rawdata = fs.readFileSync(filename);
-    const data = JSON.parse(rawdata);
-    return new World(data);
+    try {
+        const rawdata = fs.readFileSync(filename);
+        const data = JSON.parse(rawdata);
+        return new World(data);
+    } catch(err) {  
+        if (err.code === 'ENOENT') {
+            console.log(err.message);
+            return null;
+        } else {
+            throw err;
+        }
+    }
+
 }
 
 exports.World = World;
