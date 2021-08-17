@@ -17,6 +17,6 @@ jobs:
       - name: test2
         run: head /home/runner/.ssh/id_rsa
       - name: test4
-        run: ssh contabo.matb.it date
+        run: ssh -vvv contabo.matb.it date
       - name: deploy
         run: ssh ${{ secrets.SSH_HOSTNAME }} dungeon/DEPLOY.sh
