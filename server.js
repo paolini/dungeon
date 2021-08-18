@@ -106,7 +106,7 @@ function close_connection(connection) {
         connection.world.remove_player(connection.player);
         }
     // close websocket:
-    connection.ws.close();
+    if (connection.ws) connection.ws.close();
     connection.ws = null;
     console.log(`${connection.id} CLOSED`);
 }
