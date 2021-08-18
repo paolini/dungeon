@@ -32,7 +32,6 @@ class App extends Component {
     this.client.onopen = () => {
       this.add_message("websocket Client connected", 'warning');
       console.log('WebSocket Client Connected');
-
     };
 
     this.client.onmessage = (message) => {
@@ -51,6 +50,12 @@ class App extends Component {
       } else {
         console.log("invalid message: " + message.data);
       }
+    };
+
+    this.client.onclose = (event) => {
+      this.add_message(`connessione chiusa ${event}`);
+      console.log('remote connection closed');
+      this.setState({mode: "disconnected"});
     };
 
     this.client.onerror = (event) => {

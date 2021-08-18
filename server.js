@@ -49,7 +49,8 @@ wss.on('connection', (ws, req, client) => {
         "ws": ws,
         "client": client,
         "player": null,
-        "world": null
+        "world": null,
+        "alive": true
     };
 
     connections.push(connection);
@@ -62,23 +63,28 @@ wss.on('connection', (ws, req, client) => {
 //        console.log("--- " + message);
         if (message.startsWith("STA ")) {
             const name = message.substring(4);
-            var player = dungeon.world.item_by_name(name);
-            if (player) {
-                ws.send("ERR nome già utilizzato");
-                console.log("name already in use: " + name);
-            } else {
-                player = dungeon.world.add_item({
+
+            // se non c'è già un giocatore con questo nome lo creo
+            var player = 
+                dungeon.world.item_by_name(name) || 
+                dungeon.world.add_item({
                     attributes: ["player", "container"],
                     'name': name,
                     description: "un bel tipo",
                     "connection_id": connection_id
                 });
+
+            if (connections
+                    .filter(connection => (connection.player && connection.player.id === player.id))
+                    .length > 0) {
+                ws.send("ERR nome già utilizzato");
+                console.log("name already in use: " + name);
+            } else {
                 connection.player = player;
                 connection.world = dungeon.world;
                 ws.send("PLA " + player.id);
                 console.log(connection_id + " PLAY " + player.id);
-                dungeon.play(player, dungeon.world);
-                dungeon.world.where(player);
+                dungeon.spawn(player, dungeon.world);
             }
         } else if (message.startsWith("CMD ")) {
             message = message.substring(4);
@@ -88,11 +94,41 @@ wss.on('connection', (ws, req, client) => {
             ws.send(`Hello, you wrote -> ${message}`);
         }
     });
+    
     ws.on('close', (code, msg) => {
-        console.log(`${connection_id} CLOSE ${code} ${msg}`);
-        connection.ws = null;
+        close_connection(connection);
     });
 });
+
+function close_connection(connection) {
+    // remove player from world:
+    if (connection.player && connection.world) {
+        connection.world.remove_player(connection.player);
+        }
+    // close websocket:
+    connection.ws.close();
+    connection.ws = null;
+    console.log(`${connection.id} CLOSED`);
+}
+
+function heart_beat() {
+    console.log(`heart beat [${connections.length} connections]`);
+    connections.forEach(connection => {
+        if (connection.alive && connection.ws) {
+            connection.alive = false;
+            console.log(`${connection.id} ping`);
+            connection.ws.ping(() => {
+                console.log(`${connection.id} pong`);
+                connection.alive = true;
+            });
+        } else {
+            close_connection(connection);
+        }
+    });
+
+    // remove closed connections
+    connections = connections.filter(connection => connection.ws);
+}
 
 //start our server
 server.listen(process.env.PORT || 8999, () => {
@@ -102,5 +138,8 @@ server.listen(process.env.PORT || 8999, () => {
         return;
     }
     console.log(`Server started: http://localhost:${address.port}`);
+    setInterval(heart_beat, 5000);
+
+    dungeon.world.remove_all_players();
 });
 

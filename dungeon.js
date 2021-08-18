@@ -3,8 +3,7 @@ const { abort, exit } = require("process");
 const { loadWorld } = require("./world");
 commands = require("./commands").commands;
 
-function play(player, world, input) {
-//    console.log(`play(${player.id}, world, ${input})`);
+function spawn(player, world) {
     if (!player.container_id) {
         if (player.spawn_id) {
             player.container_id = player.spawn_id;
@@ -14,23 +13,25 @@ function play(player, world, input) {
                 world.print(player, "non ho trovato nessuna stanza dove metterti...");
             } else {
                 player.container_id = rooms[0].id;
-                world.broadcast(player, `${player.name} è entrato in gioco`);
             }
         }
     }
-    if (input) {
-        input.toLowerCase();
-        let matches = commands.map(cmd => cmd(input)).filter(cmd => (cmd != null));
-        if (matches.length === 1) {
-            command = matches[0];
-            if (command(player, world)) {
-                exit(0);
-            }
-        } else if (matches.length == 0) {
-            world.print(player, "Mi spiace, non ho capito...")
-        } else {
-            world.print(player, "Comando ambiguo...")
+    world.where(player);
+    world.broadcast(player, `${player.name} è entrato in gioco`);
+}
+
+function play(player, world, input) {
+    input.toLowerCase();
+    let matches = commands.map(cmd => cmd(input)).filter(cmd => (cmd != null));
+    if (matches.length === 1) {
+        command = matches[0];
+        if (command(player, world)) {
+            exit(0);
         }
+    } else if (matches.length == 0) {
+        world.print(player, "Mi spiace, non ho capito...")
+    } else {
+        world.print(player, "Comando ambiguo...")
     }
 }
 
@@ -44,8 +45,7 @@ function main(player, world) {
         terminal: true
     });
 
-    play(player, world, null);
-    world.where(player);
+    spawn(player, world);
     const prompt = "COSA DEVO FARE?"
     console.log(prompt);
     rl.on('line', function(line){
@@ -72,6 +72,7 @@ if (require.main === module) {
 }
 
 exports.play = play;
+exports.spawn = spawn;
 exports.world = world;
 exports.player = rodolfo;
 

@@ -9,6 +9,14 @@ class World {
             this.max_id = Math.max(this.max_id, value.id);
         })
     }
+        
+    print(player, msg) {
+        console.log(msg);
+    }
+
+    broadcast(item, msg) {
+        console.log(`[${msg}]`);
+    }
 
     add_item(data) {
         if (!data.id) {
@@ -17,14 +25,6 @@ class World {
         this.max_id = Math.max(this.max_id, data.id);
         this.id_to_items[data.id] = data;
         return data;
-    }
-
-    print(player, msg) {
-        console.log(msg);
-    }
-
-    broadcast(item, msg) {
-        console.log(`[${msg}]`);
     }
 
     all_items() {
@@ -43,6 +43,26 @@ class World {
         return found;
     } 
 
+    remove_player(player) {
+        // drop all items:
+        this.items_in(player).forEach(
+            item => { item.container_id = player.container_id }
+        );
+            
+        // go to heaven:
+        player.spawn_id = player.container_id;
+        player.container_id = null;
+        this.broadcast(player,`${player.name} è sparito`);
+    }
+    
+    remove_all_players() {
+        this.all_items().forEach(item => {
+            if (item['attributes'] && item['attributes'].includes('player')) {
+                this.remove_player(item);
+            }
+        });
+    }
+    
     has_name(item, name) {
         if (!item.id) {
             item = world.item(item);
@@ -150,7 +170,7 @@ class World {
 
     save(filename) {
         var data = this.all_items();
-        fs.writeFile(filename, JSON.stringify(data), 'utf8', function () {
+        fs.writeFile(filename, JSON.stringify(data, 4), 'utf8', function () {
             console.log("saved world to file " + filename);
         });
     }
